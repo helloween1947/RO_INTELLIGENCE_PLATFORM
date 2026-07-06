@@ -376,7 +376,7 @@ export default function IoTComparison() {
                         { l: "MPD Boarded", v: N.onb_mpd,  c: YELLOW },
                         { l: "MPD Online",  v: N.onl_mpd,  c: GREEN  },
                         { l: "MPD Offline", v: N.off_mpd,  c: RED    },
-                        { l: "MPD Online%", v: N.non_mpd_online_pct != null ? `${Math.round(N.non_mpd_online_pct)}%` : "—", c: YELLOW },
+                        { l: "MPD Online%", v: N.mpd_online_pct != null ? `${Math.round(N.mpd_online_pct)}%` : "—", c: YELLOW },
                       ].map(x => (
                         <div key={x.l} style={{ flex: 1, textAlign: "center", padding: "10px 4px", background: "rgba(255,255,255,0.025)", borderRadius: 8 }}>
                           <div style={{ fontSize: "1.2rem", fontWeight: 800, color: x.c }}>{x.v ?? "—"}</div>
