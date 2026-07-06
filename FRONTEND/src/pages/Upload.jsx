@@ -1,7 +1,9 @@
 import { useState, useCallback, useRef } from "react";
 import axios from "axios";
 
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+  ? "http://127.0.0.1:8000"
+  : "https://ro-intelligence-platform.onrender.com";
 
 const ACCENT = "#00E5FF";
 const PURPLE = "#7C4DFF";
