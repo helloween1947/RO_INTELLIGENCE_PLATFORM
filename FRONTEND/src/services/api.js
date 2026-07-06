@@ -1,7 +1,9 @@
 import axios from "axios";
 
 const API = axios.create({
- baseURL: "https://ro-intelligence-platform.onrender.com",
+  baseURL: window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://127.0.0.1:8000"
+    : "https://ro-intelligence-platform.onrender.com",
   headers: { "Content-Type": "application/json" },
 });
 
