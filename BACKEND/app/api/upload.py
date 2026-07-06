@@ -230,6 +230,10 @@ async def upload_excel(
     sites_created   = 0
     devices_created = 0
 
+    # Cache existing sites and devices in memory to prevent N+1 queries
+    existing_sites = {s.ro_id: s for s in db.query(Site).all()}
+    existing_devices = {d.site_id: d for d in db.query(Device).all()}
+
     for _, row in df.iterrows():
         try:
             # ── Resolve site ──────────────────────────────────────────────
@@ -252,9 +256,13 @@ async def upload_excel(
 
                 ro_name_str = str(raw_ro_name).strip() if raw_ro_name and not pd.isna(raw_ro_name) else ro_id_str
 
-                existed = db.query(Site).filter(Site.ro_id == ro_id_str).first() is not None
-                site = get_or_create_site(db, ro_id_str, ro_name_str)
-                if not existed:
+                if ro_id_str in existing_sites:
+                    site = existing_sites[ro_id_str]
+                else:
+                    site = Site(ro_id=ro_id_str, ro_name=ro_name_str, status="active")
+                    db.add(site)
+                    db.flush()
+                    existing_sites[ro_id_str] = site
                     sites_created += 1
 
             # ── Enrich site with BPCL metadata fields ─────────────────────
@@ -305,9 +313,19 @@ async def upload_excel(
                         setattr(site, field, str(raw).strip())
 
             # ── Resolve device ────────────────────────────────────────────
-            existing_device = db.query(Device).filter(Device.site_id == site.id).first()
-            device = get_or_create_device(db, site)
-            if not existing_device:
+            if site.id in existing_devices:
+                device = existing_devices[site.id]
+            else:
+                device = Device(
+                    site_id=site.id,
+                    device_name=f"{site.ro_name} - Main Unit",
+                    device_type="ro_unit",
+                    status="online",
+                    last_heartbeat=datetime.utcnow(),
+                )
+                db.add(device)
+                db.flush()
+                existing_devices[site.id] = device
                 devices_created += 1
 
             # ── Build reading payload ─────────────────────────────────────
